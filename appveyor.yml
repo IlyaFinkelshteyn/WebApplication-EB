@@ -1,0 +1,25 @@
+version: 1.0.{build}
+init:
+- ps: |
+    write-host "CI_WINDOWS: $env:CI_WINDOWS"
+    write-host "CI_LINUX: $env:CI_LINUX"
+install:
+- ps: |
+    $newContent = (Get-Content webapplication-eb/Views/Home/Index.cshtml).Replace("ASP.NET", "ASP.NET-$env:APPVEYOR_BUILD_NUMBER")
+    Set-Content -Value $newContent -Path  webapplication-eb/Views/Home/Index.cshtml
+before_build:
+- cmd: nuget restore
+build:
+  publish_wap_beanstalk: true
+  verbosity: minimal
+deploy:
+- provider: ElasticBeanstalk
+  access_key_id: AKIAIHX6TB6ZCZYYIMNQ
+  secret_access_key:
+    secure: Njji27qeu2TD7Cxr4VnqZ0MZak8EQ+/fxVRPT641Evq5Gn4ysFQjm0S4LINjBAnx
+  application_name: WebApplicationEB3
+  environment_name: WebApplicationEB3-dev3
+  region: eu-west-1
+  healthcheck: /Home/Contact
+  on:
+    CI_WINDOWS: true
